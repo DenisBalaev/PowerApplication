@@ -1,51 +1,45 @@
 package com.example.powerapplication
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.powerapplication.databinding.ActivityMainBinding
 
 
-class MainActivity : AppCompatActivity(R.layout.activity_main) {
+class MainActivity : AppCompatActivity(R.layout.activity_main),LocListenerInterface {
 
     val binding by viewBinding(ActivityMainBinding::bind)
     val REQUEST_OVERLAY_PERMISSION = 1
 
-    @RequiresApi(Build.VERSION_CODES.M)
-    private val requestOverlayPermission = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (Settings.canDrawOverlays(this)) {
-
-        } else {
-
-        }
-
-        finish()
-    }
-
+    val PERMISSIONS_REQUEST_LOCATION = 777
+    private var locationManager: LocationManager? = null
+    private lateinit var myLocListener:MyLocListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("tagPower","MainActivity")
+        init()
+    }
 
-        /*val manufacturer = "xiaomi"
-        if (manufacturer.equals(Build.MANUFACTURER, ignoreCase = true)) {
-            //this will open auto start screen where user can enable permission for your app
-            val intent = Intent()
-            intent.component = ComponentName(
-                "com.miui.securitycenter",
-                "com.miui.permcenter.autostart.AutoStartManagementActivity"
-            )
-            startActivity(intent)
-        }*/
+    private fun init(){
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        myLocListener = MyLocListener()
+        myLocListener.setLocListenerInterface(this@MainActivity)
+
+        chekPermissionGPS()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
             val intent = Intent(
@@ -54,13 +48,42 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             )
             startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
         }
-        /*val callHomeSettingIntent = Intent(Settings.ACTION_HOME_SETTINGS)
-        startActivity(callHomeSettingIntent)*/
+    }
 
-        /*if (!Settings.canDrawOverlays(this@MainActivity)) {
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-            intent.data = Uri.parse("package:$packageName")
-            requestOverlayPermission.launch(intent)
-        }*/
+    private fun chekPermissionGPS(){
+        if(ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,android.Manifest.permission.ACCESS_COARSE_LOCATION),
+                PERMISSIONS_REQUEST_LOCATION
+            )
+        }else{
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER,2L,1f,myLocListener)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSIONS_REQUEST_LOCATION && grantResults[0] == RESULT_OK){
+            chekPermissionGPS()
+        }else{
+            chekPermissionGPS()
+        }
+    }
+
+    private fun showLocation(location: Location?) {
+        if (location == null) return
+        if (location.provider == LocationManager.GPS_PROVIDER) {
+            binding.tvLocationGPS.text = formatLocation(location)
+        }
+    }
+
+    @SuppressLint("DefaultLocale")
+    private fun formatLocation(location: Location?): String? {
+        return if (location == null) "" else "${location.latitude} ${location.longitude}"
+    }
+
+    override fun onLocationChange(location: Location) {
+        showLocation(location)
     }
 }
