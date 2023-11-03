@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
@@ -31,7 +31,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </activity>
 
@@ -47,8 +46,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
-                <category android:name="android.intent.category.HOME" />
-                <action android:name="android.intent.action.REBOOT"/>
             </intent-filter>
         </receiver>
     </application>
