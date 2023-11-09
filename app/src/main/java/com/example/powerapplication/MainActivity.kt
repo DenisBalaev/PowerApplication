@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         super.onCreate(savedInstanceState)
         Log.d("tagPower","MainActivity")
         init()
+        /*val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        startActivity(intent)*/
     }
 
     private fun init(){
@@ -61,15 +63,51 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+            Log.d("StartMyActivityAtBoot","START")
+            //lastGps()
+            /*locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 25000, 1f, locationListener)
+            locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 25000, 1f, locationListener)*/
             if (locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER) ) {
-                locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 25000, 1f, locationListener)
+                locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0f, locationListener)
             }
             if (locationManager!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ) {
-                locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 25000, 1f, locationListener)
+                locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000, 0f, locationListener)
             }
+            str += "------------------------------- \n"
         }else {
             chekPermissionGPS()
         }
+    }
+
+    private var netLoc: Location? = null
+    private var gpsLoc:Location? = null
+    private var gpsCoordinate:Location? = null
+    @SuppressLint("MissingPermission")
+    private fun lastGps(){
+        val gpsEnabled = locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val networkEnabled = locationManager!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        if (gpsEnabled) {
+            gpsLoc = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        }
+        if (networkEnabled) {
+            netLoc = locationManager!!.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+        }
+
+        if (gpsLoc != null && netLoc != null) {
+            gpsCoordinate = if (gpsLoc!!.accuracy > netLoc!!.accuracy)
+                netLoc;
+            else
+                gpsLoc;
+        } else {
+
+            if (gpsLoc != null) {
+                gpsCoordinate = gpsLoc;
+            } else if (netLoc != null) {
+                gpsCoordinate = netLoc;
+            }
+        }
+        str += "0)" + "${formatLocation(gpsCoordinate)} \n"
+        binding.tvLocationGPS.text = str
     }
 
     private fun chekPermissionGPS(){
@@ -84,10 +122,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            str += "1)" + "${formatLocation(location)} \n"
+            str += "1)" + "${location.latitude}, ${location.longitude} \n"
             binding.tvLocationGPS.text = str
         }
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+        override fun onProviderEnabled(provider: String) {}
+        override fun onProviderDisabled(provider: String) {}
     }
 
     @SuppressLint("DefaultLocale")
