@@ -2,8 +2,10 @@ package com.example.powerapplication
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Criteria
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -12,11 +14,15 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.powerapplication.databinding.ActivityMainBinding
+import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
@@ -27,10 +33,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("tagPower","MainActivity")
-        init()
-        /*val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-        startActivity(intent)*/
+        startActivity(Intent(this@MainActivity,FragmentActivity::class.java))
+        finish()
+        /*Log.d("tagPower","MainActivity")
+        init()*/
     }
 
     private fun init(){
@@ -64,12 +70,29 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
             locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
             Log.d("StartMyActivityAtBoot","START")
+            val crit = Criteria().apply {
+                accuracy = Criteria.ACCURACY_FINE
+            }
+            val provider = locationManager!!.getBestProvider(crit, true)
+            //val loc: Location = provider?.let { locationManager!!.getLastKnownLocation(it) }!!
+            Toast.makeText(this@MainActivity, "provider:$provider", Toast.LENGTH_SHORT).show()
             //lastGps()
             /*locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 25000, 1f, locationListener)
             locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 25000, 1f, locationListener)*/
             if (locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER) ) {
                 locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0f, locationListener)
             }
+            /*else{
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+                builder.setCancelable(false)
+                    .setMessage("Включить GPS")
+                    .setPositiveButton("Включить") { dialog, id ->
+                        startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                        locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0f, locationListener)
+                    }
+                val alert: AlertDialog = builder.create()
+                alert.show()
+            }*/
             if (locationManager!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ) {
                 locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000, 0f, locationListener)
             }
@@ -119,11 +142,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     private var str = ""
+    private var i = 1
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            str += "1)" + "${location.latitude}, ${location.longitude} \n"
+            str += "$i)" + "${location.latitude}, ${location.longitude} \n"
             binding.tvLocationGPS.text = str
+            i++
+            //Toast.makeText(this@MainActivity,"${location.latitude}, ${location.longitude}",Toast.LENGTH_SHORT).show()
         }
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String) {}
