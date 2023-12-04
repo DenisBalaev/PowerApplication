@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.powerapplication.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
+import timber.log.Timber
 
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
@@ -33,22 +34,22 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        startActivity(Intent(this@MainActivity,FragmentActivity::class.java))
-        finish()
-        /*Log.d("tagPower","MainActivity")
-        init()*/
+        /*startActivity(Intent(this@MainActivity,FragmentActivity::class.java))
+        finish()*/
+        /*Log.d("tagPower","MainActivity")*/
+        init()
     }
 
     private fun init(){
         chekPermissionGPS()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:$packageName")
             )
             startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION)
-        }
+        }*/
     }
 
     private val locationPermissionRequest = registerForActivityResult(

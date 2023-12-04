@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.powerapplication.databinding.FragmentOneBinding
 import kotlinx.coroutines.*
+import timber.log.Timber
 import java.util.concurrent.CancellationException
 
 class OneFragment : Fragment(R.layout.fragment_one) {
@@ -46,6 +47,8 @@ class OneFragment : Fragment(R.layout.fragment_one) {
                 catch(e: CancellationException){
                     Log.d(TAG,"LSCOPE: viewLifecycleOwner.lifecycleScope cancelled: $e")
                 }
+
+                Timber.tag("CAMERA_INFORMATION_TEST").d("Restarting camera")
             }
         }
 
